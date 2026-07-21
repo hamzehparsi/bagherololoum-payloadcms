@@ -64,11 +64,15 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    donors: DonorAuthOperations;
   };
   blocks: {};
   collections: {
     users: User;
     media: Media;
+    donors: Donor;
+    occasions: Occasion;
+    donations: Donation;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,22 +82,35 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    donors: DonorsSelect<false> | DonorsSelect<true>;
+    occasions: OccasionsSelect<false> | OccasionsSelect<true>;
+    donations: DonationsSelect<false> | DonationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'payment-settings': PaymentSetting;
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    'payment-settings': PaymentSettingsSelect<false> | PaymentSettingsSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
+    'total-raised': TotalRaisedWidget;
+    'success-count': SuccessCountWidget;
+    'pending-count': PendingCountWidget;
+    'occasions-breakdown': OccasionsBreakdownWidget;
     collections: CollectionsWidget;
   };
-  user: User;
+  user: User | Donor;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -117,14 +134,32 @@ export interface UserAuthOperations {
     password: string;
   };
 }
+export interface DonorAuthOperations {
+  forgotPassword: {
+    username: string;
+  };
+  login: {
+    password: string;
+    username: string;
+  };
+  registerFirstUser: {
+    password: string;
+    username: string;
+  };
+  unlock: {
+    username: string;
+  };
+}
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
-  updatedAt: string;
+  id: number;
+  name: string;
+  role?: ('super-admin' | 'finance' | 'editor') | null;
   createdAt: string;
+  updatedAt: string;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -147,7 +182,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -163,10 +198,87 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donors".
+ */
+export interface Donor {
+  id: number;
+  firstName?: string | null;
+  lastName?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  email?: string | null;
+  /**
+   * شماره موبایل به فرمت 09xxxxxxxxx
+   */
+  username: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'donors';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "occasions".
+ */
+export interface Occasion {
+  id: number;
+  title: string;
+  description?: string | null;
+  /**
+   * در صفحه اصلی و کارت مناسبت نمایش داده می‌شود.
+   */
+  image?: (number | null) | Media;
+  startDate?: string | null;
+  endDate?: string | null;
+  /**
+   * اگر تیک بخوردید، باید مبلغ ثابت را مشخص کنید و کاربر فقط همان مبلغ را پرداخت می‌کند.
+   */
+  isFixedAmount?: boolean | null;
+  fixedAmount?: number | null;
+  /**
+   * اختیاری — اگر مشخص شود، در صفحه اصلی نوار پیشرفت جمع‌آوری کمک نمایش داده می‌شود.
+   */
+  targetAmount?: number | null;
+  isActive?: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * لیست تمامی کمک‌های مالی
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations".
+ */
+export interface Donation {
+  id: number;
+  donor: number | Donor;
+  occasion?: (number | null) | Occasion;
+  amount: number;
+  status: 'pending' | 'success' | 'failed' | 'expired';
+  trackingCode?: string | null;
+  paymentMethod?: string | null;
+  authority?: string | null;
+  refId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -183,21 +295,38 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'donors';
+        value: number | Donor;
+      } | null)
+    | ({
+        relationTo: 'occasions';
+        value: number | Occasion;
+      } | null)
+    | ({
+        relationTo: 'donations';
+        value: number | Donation;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'donors';
+        value: number | Donor;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -206,11 +335,16 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  id: number;
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'donors';
+        value: number | Donor;
+      };
   key?: string | null;
   value?:
     | {
@@ -229,7 +363,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -240,8 +374,10 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  updatedAt?: T;
+  name?: T;
+  role?: T;
   createdAt?: T;
+  updatedAt?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
@@ -274,6 +410,64 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donors_select".
+ */
+export interface DonorsSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  createdAt?: T;
+  updatedAt?: T;
+  email?: T;
+  username?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "occasions_select".
+ */
+export interface OccasionsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  image?: T;
+  startDate?: T;
+  endDate?: T;
+  isFixedAmount?: T;
+  fixedAmount?: T;
+  targetAmount?: T;
+  isActive?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations_select".
+ */
+export interface DonationsSelect<T extends boolean = true> {
+  donor?: T;
+  occasion?: T;
+  amount?: T;
+  status?: T;
+  trackingCode?: T;
+  paymentMethod?: T;
+  authority?: T;
+  refId?: T;
+  createdAt?: T;
+  updatedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -314,6 +508,145 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-settings".
+ */
+export interface PaymentSetting {
+  id: number;
+  suggestedAmounts?:
+    | {
+        amount: number;
+        id?: string | null;
+      }[]
+    | null;
+  minCustomAmount?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteName: string;
+  /**
+   * مثال: https://bagherololoum.ir — می‌توانید فقط دامنه هم بنویسید
+   */
+  siteUrl: string;
+  /**
+   * برای meta description پیش‌فرض و snippet موتورهای جستجو
+   */
+  siteDescription?: string | null;
+  /**
+   * در رسید PDF و بخش‌های برند سایت استفاده می‌شود
+   */
+  siteLogo?: (number | null) | Media;
+  /**
+   * عنوان صفحه اصلی و fallback سایر صفحات
+   */
+  defaultTitle?: string | null;
+  /**
+   * از %s برای جایگزینی عنوان صفحه استفاده کنید
+   */
+  titleTemplate?: string | null;
+  /**
+   * با ویرگول جدا کنید. مثال: خیریه, هیئت, کمک مالی
+   */
+  keywords?: string | null;
+  /**
+   * تصویر پیش‌فرض برای اشتراک‌گذاری در شبکه‌های اجتماعی
+   */
+  ogImage?: (number | null) | Media;
+  /**
+   * بدون @ — اختیاری
+   */
+  twitterUsername?: string | null;
+  /**
+   * مقدار content از meta tag گوگل — اختیاری
+   */
+  googleSiteVerification?: string | null;
+  allowIndexing?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-settings_select".
+ */
+export interface PaymentSettingsSelect<T extends boolean = true> {
+  suggestedAmounts?:
+    | T
+    | {
+        amount?: T;
+        id?: T;
+      };
+  minCustomAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  siteUrl?: T;
+  siteDescription?: T;
+  siteLogo?: T;
+  defaultTitle?: T;
+  titleTemplate?: T;
+  keywords?: T;
+  ogImage?: T;
+  twitterUsername?: T;
+  googleSiteVerification?: T;
+  allowIndexing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "total-raised_widget".
+ */
+export interface TotalRaisedWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "success-count_widget".
+ */
+export interface SuccessCountWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pending-count_widget".
+ */
+export interface PendingCountWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "occasions-breakdown_widget".
+ */
+export interface OccasionsBreakdownWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
