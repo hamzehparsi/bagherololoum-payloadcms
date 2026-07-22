@@ -4,19 +4,36 @@ import { Button } from '@/components/ui/button'
 import { logout } from '@/app/(frontend)/auth/actions/logout'
 import { getDonorDisplayName } from '@/lib/profile'
 import PendingPaymentsBell, { type PendingPaymentItem } from '@/components/PendingPaymentsBell'
+import MobileNav from '@/components/MobileNav'
+import SiteBrand from '@/components/SiteBrand'
+import SiteNav from '@/components/SiteNav'
+import type { NavLinkItem } from '@/lib/navigation'
 
 type HeaderProps = {
   user: Donor
   pendingPayments?: PendingPaymentItem[]
+  navItems?: NavLinkItem[]
+  siteName?: string
+  logoUrl?: string | null
 }
 
-export default function Header({ user, pendingPayments = [] }: HeaderProps) {
+export default function Header({
+  user,
+  pendingPayments = [],
+  navItems = [],
+  siteName,
+  logoUrl,
+}: HeaderProps) {
+  const name = siteName || 'هیات باقرالعلوم (ع)'
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/" className="text-base font-bold text-foreground">
-          هیات باقرالعلوم (ع)
-        </Link>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <MobileNav items={navItems} siteName={name} />
+          <SiteBrand siteName={name} logoUrl={logoUrl} />
+          <SiteNav items={navItems} />
+        </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
           <PendingPaymentsBell items={pendingPayments} />

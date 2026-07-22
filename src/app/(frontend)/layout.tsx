@@ -1,7 +1,9 @@
 import './globals.css' // ← حتماً این خط باشه
 import { Toaster } from 'sonner'
 import localFont from 'next/font/local'
+import type { Metadata } from 'next'
 
+import SiteFooterServer from '@/components/SiteFooterServer'
 import { generatePageMetadata } from '@/lib/page-metadata'
 
 const AbarLow = localFont({
@@ -39,7 +41,7 @@ const AbarHigh = localFont({
   variable: '--font-abar-high',
   display: 'swap',
 })
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata()
 }
 
@@ -50,8 +52,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       dir="rtl"
       className={`${AbarLow.variable} ${AbarMid.variable} ${AbarHigh.variable}`}
     >
-      <body className="font-sans antialiased">
-        {children}
+      <body className="flex min-h-screen flex-col font-sans antialiased">
+        <div className="flex-1">{children}</div>
+        <SiteFooterServer />
         <Toaster position="top-center" richColors closeButton />
       </body>
     </html>

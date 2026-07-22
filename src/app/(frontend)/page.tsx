@@ -1,20 +1,26 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import config from '@payload-config'
 import { getPayload } from 'payload'
-import { ArrowLeft, HandCoins, HeartHandshake, Users } from 'lucide-react'
+import { ArrowLeft, HeartHandshake } from 'lucide-react'
 
+import ContentCard from '@/components/content/ContentCard'
+import SectionHeader from '@/components/home/SectionHeader'
 import SiteHeader from '@/components/SiteHeader'
 import OccasionCard, { type OccasionCardData } from '@/components/home/OccasionCard'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getSession } from '@/app/(frontend)/auth/actions/get-session'
+import { podcastCategoryLabels, publishedOnly } from '@/lib/content'
 import { generatePageMetadata } from '@/lib/page-metadata'
 import { donorNeedsProfile } from '@/lib/profile'
 import { getSiteSettings } from '@/lib/site-settings'
 import { getDonationStats } from '@/lib/donation-stats'
 import { buildOccasionDateRangeLabel, resolveOccasionImageUrl } from '@/lib/occasion-card-data'
+import { buildDateRangeLabel, formatJalaliDate } from '@/lib/jalali-date'
+import { resolveMediaAlt, resolveMediaSizeUrl, resolveMediaUrl } from '@/lib/media'
 import { formatTomans } from '@/lib/format'
 import { GENERAL_DONATION_DESCRIPTION, GENERAL_DONATION_TITLE } from '@/lib/payment-amounts'
 
@@ -34,16 +40,46 @@ export default async function HomePage() {
   }
 
   const payload = await getPayload({ config })
-  const [settings, occasionsResult, stats] = await Promise.all([
-    getSiteSettings(),
-    payload.find({
-      collection: 'occasions',
-      where: { isActive: { equals: true } },
-      limit: 12,
-      sort: '-createdAt',
-    }),
-    getDonationStats(payload),
-  ])
+  const [settings, occasionsResult, stats, eventsResult, galleriesResult, podcastsResult, newsResult] =
+    await Promise.all([
+      getSiteSettings(),
+      payload.find({
+        collection: 'occasions',
+        where: { isActive: { equals: true } },
+        limit: 6,
+        sort: '-createdAt',
+        depth: 1,
+      }),
+      getDonationStats(payload),
+      payload.find({
+        collection: 'events',
+        where: publishedOnly,
+        limit: 3,
+        sort: '-startDate',
+        depth: 1,
+      }),
+      payload.find({
+        collection: 'galleries',
+        where: publishedOnly,
+        limit: 3,
+        sort: '-createdAt',
+        depth: 1,
+      }),
+      payload.find({
+        collection: 'podcasts',
+        where: publishedOnly,
+        limit: 3,
+        sort: '-createdAt',
+        depth: 1,
+      }),
+      payload.find({
+        collection: 'news',
+        where: publishedOnly,
+        limit: 3,
+        sort: '-publishedAt',
+        depth: 1,
+      }),
+    ])
 
   const occasions: OccasionCardData[] = occasionsResult.docs.map((occasion) => ({
     id: occasion.id,
@@ -57,79 +93,176 @@ export default async function HomePage() {
     dateRangeLabel: buildOccasionDateRangeLabel(occasion),
   }))
 
+  const featuredEvent = eventsResult.docs[0]
+  const heroImage =
+    resolveMediaSizeUrl(featuredEvent?.image, 'hero') ||
+    resolveMediaSizeUrl(settings.siteLogo, 'hero') ||
+    resolveMediaUrl(settings.siteLogo)
+
   return (
     <>
       <SiteHeader user={user} />
 
       <main>
-        {/* Hero */}
-        <section className="border-b border-border bg-gradient-to-br from-primary/5 via-background to-emerald-500/5">
-          <div className="mx-auto max-w-5xl px-4 py-14 text-center sm:px-6 sm:py-20">
-            <h1 className="text-2xl font-black leading-tight sm:text-4xl">
+        {/* Hero — برند + یک جمله + CTA + تصویر غالب */}
+        <section className="relative isolate min-h-[70vh] overflow-hidden border-b border-border">
+          {heroImage ? (
+            <Image
+              src={heroImage}
+              alt={
+                featuredEvent
+                  ? resolveMediaAlt(featuredEvent.image, featuredEvent.title)
+                  : settings.siteName
+              }
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-teal-800 to-stone-900" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-black/25" />
+
+          <div className="relative mx-auto flex min-h-[70vh] max-w-5xl flex-col items-center justify-center px-4 py-16 text-center sm:px-6">
+            <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">
               {settings.siteName}
             </h1>
-            {settings.siteDescription && (
-              <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {settings.siteDescription}
+            {(settings.siteDescription || featuredEvent?.excerpt) && (
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
+                {featuredEvent?.excerpt || settings.siteDescription}
               </p>
             )}
-
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/donate" className={cn(buttonVariants({ size: 'lg' }), 'gap-2 px-6')}>
+              <Link
+                href="/donate"
+                className={cn(
+                  buttonVariants({ size: 'lg' }),
+                  'gap-2 bg-white px-6 text-emerald-900 hover:bg-white/90',
+                )}
+              >
                 <HeartHandshake className="h-4 w-4" />
                 مشارکت در کمک مالی
               </Link>
-              {!user && (
+              {featuredEvent?.slug ? (
                 <Link
-                  href="/auth"
-                  className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'px-6')}
+                  href={`/events/${featuredEvent.slug}`}
+                  className={cn(
+                    buttonVariants({ variant: 'outline', size: 'lg' }),
+                    'border-white/40 bg-transparent px-6 text-white hover:bg-white/10 hover:text-white',
+                  )}
                 >
-                  ورود / ثبت‌نام
+                  {featuredEvent.title}
+                </Link>
+              ) : (
+                <Link
+                  href="/events"
+                  className={cn(
+                    buttonVariants({ variant: 'outline', size: 'lg' }),
+                    'border-white/40 bg-transparent px-6 text-white hover:bg-white/10 hover:text-white',
+                  )}
+                >
+                  رویدادها
                 </Link>
               )}
             </div>
           </div>
         </section>
 
-        {/* Stats */}
-        <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-card p-6 text-center">
-              <HandCoins className="mx-auto h-6 w-6 text-emerald-600" />
-              <p className="mt-3 text-xl font-black">{formatTomans(stats.totalRaised)}</p>
-              <p className="mt-1 text-xs text-muted-foreground">جمع کمک‌های جمع‌آوری‌شده</p>
+        {/* رویدادها */}
+        {eventsResult.docs.length > 0 && (
+          <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+            <SectionHeader title="رویدادها و برنامه‌ها" href="/events" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {eventsResult.docs.map((event) => (
+                <ContentCard
+                  key={event.id}
+                  href={`/events/${event.slug || event.id}`}
+                  title={event.title}
+                  description={event.excerpt}
+                  meta={buildDateRangeLabel(event.startDate, event.endDate)}
+                  imageUrl={resolveMediaSizeUrl(event.image, 'card')}
+                  imageAlt={resolveMediaAlt(event.image, event.title)}
+                />
+              ))}
             </div>
-            <div className="rounded-2xl border border-border bg-card p-6 text-center">
-              <Users className="mx-auto h-6 w-6 text-primary" />
-              <p className="mt-3 text-xl font-black">
-                {stats.successCount.toLocaleString('fa-IR')}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">پرداخت موفق</p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-6 text-center">
-              <HeartHandshake className="mx-auto h-6 w-6 text-rose-500" />
-              <p className="mt-3 text-xl font-black">
-                {occasions.length.toLocaleString('fa-IR')}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">مناسبت فعال</p>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Occasions */}
+        {/* گزارش تصویری */}
+        {galleriesResult.docs.length > 0 && (
+          <section className="border-y border-border bg-muted/20">
+            <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+              <SectionHeader title="گزارش‌های تصویری" href="/galleries" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {galleriesResult.docs.map((gallery) => (
+                  <ContentCard
+                    key={gallery.id}
+                    href={`/galleries/${gallery.slug || gallery.id}`}
+                    title={gallery.title}
+                    description={gallery.description}
+                    meta={formatJalaliDate(gallery.createdAt)}
+                    imageUrl={
+                      resolveMediaSizeUrl(gallery.coverImage, 'card') ||
+                      resolveMediaSizeUrl(gallery.images?.[0], 'card')
+                    }
+                    imageAlt={resolveMediaAlt(gallery.coverImage, gallery.title)}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* صوت و پادکست */}
+        {podcastsResult.docs.length > 0 && (
+          <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+            <SectionHeader title="روضه، مداحی و پادکست" href="/podcasts" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {podcastsResult.docs.map((podcast) => (
+                <ContentCard
+                  key={podcast.id}
+                  href={`/podcasts/${podcast.slug || podcast.id}`}
+                  title={podcast.title}
+                  description={podcast.description}
+                  meta={[podcastCategoryLabels[podcast.category], podcast.performer]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  imageUrl={resolveMediaSizeUrl(podcast.coverImage, 'card')}
+                  imageAlt={resolveMediaAlt(podcast.coverImage, podcast.title)}
+                  badge={podcastCategoryLabels[podcast.category]}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* اخبار */}
+        {newsResult.docs.length > 0 && (
+          <section className="border-y border-border bg-muted/20">
+            <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+              <SectionHeader title="آخرین اخبار" href="/news" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {newsResult.docs.map((item) => (
+                  <ContentCard
+                    key={item.id}
+                    href={`/news/${item.slug || item.id}`}
+                    title={item.title}
+                    description={item.excerpt}
+                    meta={formatJalaliDate(item.publishedAt || item.createdAt)}
+                    imageUrl={resolveMediaSizeUrl(item.featuredImage, 'card')}
+                    imageAlt={resolveMediaAlt(item.featuredImage, item.title)}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* مناسبت‌های کمک مالی */}
         {occasions.length > 0 && (
-          <section className="mx-auto max-w-5xl px-4 pb-10 sm:px-6">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-bold">مناسبت‌های فعال</h2>
-              <Link
-                href="/donate"
-                className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                مشاهده همه
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </div>
-
+          <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+            <SectionHeader title="مناسبت‌های کمک مالی" href="/donate" />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {occasions.map((occasion) => (
                 <OccasionCard key={occasion.id} occasion={occasion} />
@@ -138,8 +271,8 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* General support */}
-        <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6">
+        {/* حمایت عمومی */}
+        <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
           <div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-8 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-base font-bold">{GENERAL_DONATION_TITLE}</h2>
@@ -154,7 +287,10 @@ export default async function HomePage() {
             </div>
             <Link
               href="/donate?occasion=general"
-              className={cn(buttonVariants({ size: 'lg' }), 'shrink-0 gap-2 bg-emerald-600 px-6 hover:bg-emerald-700')}
+              className={cn(
+                buttonVariants({ size: 'lg' }),
+                'shrink-0 gap-2 bg-emerald-600 px-6 hover:bg-emerald-700',
+              )}
             >
               حمایت می‌کنم
               <ArrowLeft className="h-4 w-4" />

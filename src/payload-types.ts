@@ -73,6 +73,12 @@ export interface Config {
     donors: Donor;
     occasions: Occasion;
     donations: Donation;
+    events: Event;
+    galleries: Gallery;
+    podcasts: Podcast;
+    news: News;
+    'board-members': BoardMember;
+    pages: Page;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -85,6 +91,12 @@ export interface Config {
     donors: DonorsSelect<false> | DonorsSelect<true>;
     occasions: OccasionsSelect<false> | OccasionsSelect<true>;
     donations: DonationsSelect<false> | DonationsSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
+    galleries: GalleriesSelect<false> | GalleriesSelect<true>;
+    podcasts: PodcastsSelect<false> | PodcastsSelect<true>;
+    news: NewsSelect<false> | NewsSelect<true>;
+    'board-members': BoardMembersSelect<false> | BoardMembersSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -97,10 +109,12 @@ export interface Config {
   globals: {
     'payment-settings': PaymentSetting;
     'site-settings': SiteSetting;
+    navigation: Navigation;
   };
   globalsSelect: {
     'payment-settings': PaymentSettingsSelect<false> | PaymentSettingsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
   };
   locale: null;
   widgets: {
@@ -195,6 +209,32 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -275,6 +315,180 @@ export interface Donation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  /**
+   * آدرس صفحه - به صورت خودکار از عنوان تولید می‌شود
+   */
+  slug: string;
+  image?: (number | null) | Media;
+  /**
+   * در کارت رویداد و لیست‌ها نمایش داده می‌شود.
+   */
+  excerpt?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  location?: string | null;
+  /**
+   * اختیاری — اگر انتخاب شود، دکمه «کمک به این برنامه» در صفحه رویداد نمایش داده می‌شود.
+   */
+  relatedOccasion?: (number | null) | Occasion;
+  isPublished?: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "galleries".
+ */
+export interface Gallery {
+  id: number;
+  title: string;
+  /**
+   * آدرس صفحه - به صورت خودکار از عنوان تولید می‌شود
+   */
+  slug: string;
+  event?: (number | null) | Event;
+  description?: string | null;
+  /**
+   * اگر خالی باشد، اولین تصویر گالری استفاده می‌شود.
+   */
+  coverImage?: (number | null) | Media;
+  /**
+   * می‌توانید چند تصویر را یک‌جا انتخاب یا بارگذاری کنید.
+   */
+  images: (number | Media)[];
+  isPublished?: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts".
+ */
+export interface Podcast {
+  id: number;
+  title: string;
+  /**
+   * آدرس صفحه - به صورت خودکار از عنوان تولید می‌شود
+   */
+  slug: string;
+  category: 'rawda' | 'maddahi' | 'lecture' | 'podcast';
+  performer?: string | null;
+  audio: number | Media;
+  coverImage?: (number | null) | Media;
+  event?: (number | null) | Event;
+  description?: string | null;
+  isPublished?: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news".
+ */
+export interface News {
+  id: number;
+  title: string;
+  /**
+   * آدرس صفحه - به صورت خودکار از عنوان تولید می‌شود
+   */
+  slug: string;
+  featuredImage?: (number | null) | Media;
+  /**
+   * در کارت خبر و توضیحات SEO استفاده می‌شود.
+   */
+  excerpt?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  publishedAt?: string | null;
+  isPublished?: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "board-members".
+ */
+export interface BoardMember {
+  id: number;
+  name: string;
+  role?: string | null;
+  photo?: (number | null) | Media;
+  bio?: string | null;
+  /**
+   * عدد کوچک‌تر اول نمایش داده می‌شود.
+   */
+  order?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * آدرس صفحه - به صورت خودکار از عنوان تولید می‌شود
+   */
+  slug: string;
+  image?: (number | null) | Media;
+  excerpt?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  showBoardMembers?: boolean | null;
+  isPublished?: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -316,6 +530,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'donations';
         value: number | Donation;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'galleries';
+        value: number | Gallery;
+      } | null)
+    | ({
+        relationTo: 'podcasts';
+        value: number | Podcast;
+      } | null)
+    | ({
+        relationTo: 'news';
+        value: number | News;
+      } | null)
+    | ({
+        relationTo: 'board-members';
+        value: number | BoardMember;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
       } | null);
   globalSlug?: string | null;
   user:
@@ -410,6 +648,40 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -466,6 +738,99 @@ export interface DonationsSelect<T extends boolean = true> {
   paymentMethod?: T;
   authority?: T;
   refId?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  image?: T;
+  excerpt?: T;
+  content?: T;
+  startDate?: T;
+  endDate?: T;
+  location?: T;
+  relatedOccasion?: T;
+  isPublished?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "galleries_select".
+ */
+export interface GalleriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  event?: T;
+  description?: T;
+  coverImage?: T;
+  images?: T;
+  isPublished?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts_select".
+ */
+export interface PodcastsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  category?: T;
+  performer?: T;
+  audio?: T;
+  coverImage?: T;
+  event?: T;
+  description?: T;
+  isPublished?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news_select".
+ */
+export interface NewsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  featuredImage?: T;
+  excerpt?: T;
+  content?: T;
+  publishedAt?: T;
+  isPublished?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "board-members_select".
+ */
+export interface BoardMembersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  photo?: T;
+  bio?: T;
+  order?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  image?: T;
+  excerpt?: T;
+  content?: T;
+  showBoardMembers?: T;
+  isPublished?: T;
   createdAt?: T;
   updatedAt?: T;
 }
@@ -574,6 +939,67 @@ export interface SiteSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation".
+ */
+export interface Navigation {
+  id: number;
+  /**
+   * ترتیب همین‌جا تعیین‌کننده ترتیب نمایش در هدر است.
+   */
+  headerItems?:
+    | {
+        label: string;
+        /**
+         * مسیر داخلی مثل ‎/events‎ یا آدرس کامل مثل https://...
+         */
+        href: string;
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  footerAbout?: string | null;
+  /**
+   * آدرس کامل هیات برای نمایش در فوتر
+   */
+  footerAddress?: string | null;
+  footerPhone?: string | null;
+  /**
+   * با کد کشور، مثال: 989121234567
+   */
+  footerWhatsapp?: string | null;
+  footerEmail?: string | null;
+  /**
+   * حتماً لینک کامل با https وارد کنید، مثال: https://maps.app.goo.gl/... — آدرس متنی را در فیلد «آدرس» بگذارید، نه اینجا.
+   */
+  footerMapUrl?: string | null;
+  /**
+   * صفحات منتشرشده و «هیات امنا» به‌صورت خودکار در فوتر می‌آیند. اینجا فقط لینک‌های اضافه بگذارید.
+   */
+  footerLinks?:
+    | {
+        label: string;
+        /**
+         * مسیر داخلی مثل ‎/events‎ یا آدرس کامل مثل https://...
+         */
+        href: string;
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  socialLinks?:
+    | {
+        platform: 'instagram' | 'telegram' | 'eitaa' | 'aparat' | 'youtube' | 'other';
+        label?: string | null;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  copyrightText?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payment-settings_select".
  */
 export interface PaymentSettingsSelect<T extends boolean = true> {
@@ -604,6 +1030,46 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   twitterUsername?: T;
   googleSiteVerification?: T;
   allowIndexing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation_select".
+ */
+export interface NavigationSelect<T extends boolean = true> {
+  headerItems?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  footerAbout?: T;
+  footerAddress?: T;
+  footerPhone?: T;
+  footerWhatsapp?: T;
+  footerEmail?: T;
+  footerMapUrl?: T;
+  footerLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  copyrightText?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

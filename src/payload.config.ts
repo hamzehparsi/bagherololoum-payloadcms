@@ -12,8 +12,15 @@ import { Media } from './collections/Media'
 import Donors from './collections/Donors'
 import Occasions from './collections/Occasions'
 import Donations from './collections/Donations'
+import Events from './collections/Events'
+import Galleries from './collections/Galleries'
+import Podcasts from './collections/Podcasts'
+import News from './collections/News'
+import BoardMembers from './collections/BoardMembers'
+import Pages from './collections/Pages'
 import { PaymentSettings } from './globals/PaymentSettings'
 import { SiteSettings } from './globals/SiteSettings'
+import { Navigation } from './globals/Navigation'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,6 +30,12 @@ export default buildConfig({
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    components: {
+      graphics: {
+        Logo: '@/components/Logo',
+        Icon: '@/components/Icon', // آیکون در نوار کناری
+      },
     },
     dashboard: {
       widgets: [
@@ -68,8 +81,20 @@ export default buildConfig({
     fallbackLanguage: 'fa',
     supportedLanguages: { fa, en },
   },
-  collections: [Users, Media, Donors, Occasions, Donations],
-  globals: [PaymentSettings, SiteSettings],
+  collections: [
+    Users,
+    Media,
+    Donors,
+    Occasions,
+    Donations,
+    Events,
+    Galleries,
+    Podcasts,
+    News,
+    BoardMembers,
+    Pages,
+  ],
+  globals: [PaymentSettings, SiteSettings, Navigation],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

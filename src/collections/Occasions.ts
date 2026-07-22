@@ -7,6 +7,7 @@ const Occasions: CollectionConfig = {
   slug: 'occasions',
   admin: {
     useAsTitle: 'title',
+    group: 'مالی',
   },
   labels: {
     singular: 'مناسبت',
