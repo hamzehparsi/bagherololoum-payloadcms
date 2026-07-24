@@ -43,9 +43,9 @@ export default function AmountSelector({
 
   if (fixedAmount != null) {
     return (
-      <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-4 text-center">
+      <div className="rounded-xl border border-brand-red/20 bg-brand-red/5 px-4 py-4 text-center">
         <p className="text-xs text-muted-foreground">مبلغ ثابت این مناسبت</p>
-        <p className="mt-1 text-lg font-bold text-primary">{formatTomans(fixedAmount)}</p>
+        <p className="mt-1 text-lg font-bold text-brand-red">{formatTomans(fixedAmount)}</p>
       </div>
     )
   }
@@ -65,8 +65,8 @@ export default function AmountSelector({
                 className={cn(
                   'rounded-xl border px-4 py-2.5 text-sm font-medium transition-all',
                   value === amount
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50',
+                    ? 'border-brand-red bg-brand-red text-brand-red-foreground'
+                    : 'border-border bg-background hover:border-brand-red/40 hover:bg-brand-red/5',
                 )}
               >
                 {formatTomans(amount)}
@@ -91,7 +91,7 @@ export default function AmountSelector({
             setCustomInput(parsed ? parsed.toLocaleString('fa-IR') : '')
             onChange(parsed)
           }}
-          className="h-11 w-full rounded-xl border border-input bg-background px-4 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+          className="h-11 w-full rounded-xl border border-input bg-background px-4 text-base outline-none transition-colors focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 disabled:opacity-50"
         />
       </div>
     </div>

@@ -15,7 +15,7 @@ import { formatJalaliDate } from '@/lib/jalali-date'
 import { getOccasionTitle } from '@/lib/donation-receipt-data'
 import { expireStalePendingDonations } from '@/lib/donation-expiry'
 import { resolveMediaUrl } from '@/lib/media'
-import { getNavigation } from '@/lib/navigation'
+import { getNavigation, resolveAboutMenuItems } from '@/lib/navigation'
 import { getSiteSettings } from '@/lib/site-settings'
 
 type SiteHeaderProps = {
@@ -50,6 +50,7 @@ async function getPendingPayments(donorId: number): Promise<PendingPaymentItem[]
 export default async function SiteHeader({ user }: SiteHeaderProps) {
   const [navigation, settings] = await Promise.all([getNavigation(), getSiteSettings()])
   const navItems = navigation.headerItems || []
+  const aboutItems = resolveAboutMenuItems(navigation.aboutMenuItems)
   const siteName = settings.siteName || 'هیات باقرالعلوم (ع)'
   const logoUrl = resolveMediaUrl(settings.siteLogo)
 
@@ -60,6 +61,7 @@ export default async function SiteHeader({ user }: SiteHeaderProps) {
         user={user}
         pendingPayments={pendingPayments}
         navItems={navItems}
+        aboutItems={aboutItems}
         siteName={siteName}
         logoUrl={logoUrl}
       />
@@ -70,9 +72,9 @@ export default async function SiteHeader({ user }: SiteHeaderProps) {
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          <MobileNav items={navItems} siteName={siteName} />
+          <MobileNav items={navItems} aboutItems={aboutItems} siteName={siteName} />
           <SiteBrand siteName={siteName} logoUrl={logoUrl} />
-          <SiteNav items={navItems} />
+          <SiteNav items={navItems} aboutItems={aboutItems} />
         </div>
 
         <div className="flex items-center gap-2">

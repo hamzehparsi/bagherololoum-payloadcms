@@ -7,6 +7,8 @@ import { getPayload } from 'payload'
 import { ArrowLeft } from 'lucide-react'
 
 import AudioPlayer from '@/components/content/AudioPlayer'
+import ContentRichText from '@/components/content/ContentRichText'
+import PodcastHashtags from '@/components/content/PodcastHashtags'
 import SiteHeader from '@/components/SiteHeader'
 import { getSession } from '@/app/(frontend)/auth/actions/get-session'
 import { podcastCategoryLabels } from '@/lib/content'
@@ -14,6 +16,7 @@ import { findBySlug, normalizeRouteSlug } from '@/lib/find-by-slug'
 import { formatJalaliDate } from '@/lib/jalali-date'
 import { resolveMediaAlt, resolveMediaSizeUrl, resolveMediaUrl } from '@/lib/media'
 import { generatePageMetadata } from '@/lib/page-metadata'
+import { podcastPerformerHref } from '@/lib/podcast-filters'
 import type { Podcast } from '@/payload-types'
 
 type PodcastDetailPageProps = {
@@ -76,16 +79,23 @@ export default async function PodcastDetailPage({ params }: PodcastDetailPagePro
           )}
 
           <div className="min-w-0 flex-1">
-            <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            <span className="inline-block rounded-full bg-brand-red/10 px-3 py-1 text-xs font-medium text-brand-red">
               {podcastCategoryLabels[podcast.category]}
             </span>
             <h1 className="mt-3 text-2xl font-black sm:text-3xl">{podcast.title}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-              {podcast.performer && <span>{podcast.performer}</span>}
+              {podcast.performer && (
+                <Link
+                  href={podcastPerformerHref(podcast.performer)}
+                  className="font-medium text-brand-red hover:underline"
+                >
+                  {podcast.performer}
+                </Link>
+              )}
               {relatedEvent?.slug ? (
                 <Link
                   href={`/events/${relatedEvent.slug}`}
-                  className="font-medium text-primary hover:underline"
+                  className="font-medium text-brand-red hover:underline"
                 >
                   {relatedEvent.title}
                 </Link>
@@ -97,6 +107,7 @@ export default async function PodcastDetailPage({ params }: PodcastDetailPagePro
                 {podcast.description}
               </p>
             )}
+            <PodcastHashtags hashtags={podcast.hashtags} className="mt-4" />
           </div>
         </div>
 
@@ -106,6 +117,13 @@ export default async function PodcastDetailPage({ params }: PodcastDetailPagePro
           </div>
         ) : (
           <p className="mt-8 text-sm text-muted-foreground">فایل صوتی در دسترس نیست.</p>
+        )}
+
+        {podcast.speechText && (
+          <section className="mt-10 border-t border-border pt-8">
+            <h2 className="mb-4 text-lg font-bold">متن سخنرانی</h2>
+            <ContentRichText data={podcast.speechText} />
+          </section>
         )}
       </main>
     </>

@@ -9,6 +9,10 @@ export const jalaliTimestampFields: Field[] = [
     type: 'date',
     label: 'تاریخ ایجاد',
     admin: {
+      date: {
+        pickerAppearance: 'dayOnly',
+        displayFormat: 'yyyy/MM/dd',
+      },
       components: {
         Cell: jalaliDateCell,
         Field: hiddenField,
@@ -20,6 +24,10 @@ export const jalaliTimestampFields: Field[] = [
     type: 'date',
     label: 'تاریخ به‌روزرسانی',
     admin: {
+      date: {
+        pickerAppearance: 'dayOnly',
+        displayFormat: 'yyyy/MM/dd',
+      },
       components: {
         Cell: jalaliDateCell,
         Field: hiddenField,

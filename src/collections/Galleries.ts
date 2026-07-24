@@ -12,8 +12,8 @@ const Galleries: CollectionConfig = {
     defaultColumns: ['title', 'event', 'isPublished', 'createdAt'],
   },
   labels: {
-    singular: 'گزارش تصویری',
-    plural: 'گزارش‌های تصویری',
+    singular: 'گزارش چندرسانه‌ای',
+    plural: 'چندرسانه‌ای',
   },
   access: {
     create: isContentManager,
@@ -36,6 +36,20 @@ const Galleries: CollectionConfig = {
       label: 'رویداد مرتبط',
     },
     {
+      name: 'type',
+      type: 'select',
+      required: true,
+      defaultValue: 'photo',
+      label: 'نوع گزارش',
+      options: [
+        { label: 'گزارش تصویری', value: 'photo' },
+        { label: 'ویدیو', value: 'video' },
+      ],
+      admin: {
+        description: 'این نوع روی کارت گزارش در سایت نمایش داده می‌شود.',
+      },
+    },
+    {
       name: 'description',
       type: 'textarea',
       label: 'توضیح کوتاه',
@@ -54,13 +68,25 @@ const Galleries: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       hasMany: true,
-      required: true,
       label: 'تصاویر',
       admin: {
         description: 'می‌توانید چند تصویر را یک‌جا انتخاب یا بارگذاری کنید.',
       },
       filterOptions: {
         mimeType: { contains: 'image' },
+      },
+    },
+    {
+      name: 'videos',
+      type: 'upload',
+      relationTo: 'media',
+      hasMany: true,
+      label: 'ویدیوها',
+      admin: {
+        description: 'اگر ویدیو داشته باشد، نوع گزارش «ویدیو» نمایش داده می‌شود.',
+      },
+      filterOptions: {
+        mimeType: { contains: 'video' },
       },
     },
     {

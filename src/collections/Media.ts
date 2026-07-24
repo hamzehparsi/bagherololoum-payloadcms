@@ -4,6 +4,9 @@ export const Media: CollectionConfig = {
   slug: 'media',
   access: {
     read: () => true,
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => user?.collection === 'users',
+    delete: ({ req: { user } }) => user?.collection === 'users',
   },
   labels: {
     singular: 'رسانه',
@@ -26,6 +29,12 @@ export const Media: CollectionConfig = {
         position: 'centre',
       },
       {
+        name: 'avatar',
+        width: 256,
+        height: 256,
+        position: 'centre',
+      },
+      {
         name: 'card',
         width: 768,
         height: 512,
@@ -38,6 +47,6 @@ export const Media: CollectionConfig = {
       },
     ],
     adminThumbnail: 'thumbnail',
-    mimeTypes: ['image/*', 'audio/*', 'video/mp4', 'application/pdf'],
+    mimeTypes: ['image/*', 'audio/*', 'video/*', 'application/pdf'],
   },
 }

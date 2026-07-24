@@ -20,7 +20,7 @@ export default function ConfirmDonationButton() {
   }
 
   return (
-    <Button className="h-12 w-full text-sm font-semibold" disabled={pending} onClick={handleConfirm}>
+    <Button variant="secondary" className="h-12 w-full text-sm font-semibold" disabled={pending} onClick={handleConfirm}>
       <CreditCard className="ml-2 h-4 w-4" />
       {pending ? 'در حال آماده‌سازی...' : 'رفتن به درگاه پرداخت'}
     </Button>

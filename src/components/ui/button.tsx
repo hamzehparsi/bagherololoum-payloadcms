@@ -8,16 +8,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        default: "bg-brand-red text-brand-red-foreground hover:bg-brand-red/90 focus-visible:ring-brand-red/30",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-brand-green/25 bg-background text-brand-green hover:border-brand-green/40 hover:bg-brand-green/5 aria-expanded:bg-brand-green/5 aria-expanded:text-brand-green dark:border-brand-green/35 dark:hover:bg-brand-green/10",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-brand-green text-brand-green-foreground hover:bg-brand-green/90 focus-visible:ring-brand-green/30 aria-expanded:bg-brand-green aria-expanded:text-brand-green-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "text-brand-green hover:bg-brand-green/8 hover:text-brand-green aria-expanded:bg-brand-green/8 aria-expanded:text-brand-green dark:hover:bg-brand-green/12",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-brand-red/10 text-brand-red hover:bg-brand-red/15 focus-visible:border-brand-red/40 focus-visible:ring-brand-red/20 dark:bg-brand-red/20 dark:hover:bg-brand-red/30 dark:focus-visible:ring-brand-red/40",
+        link: "text-brand-red underline-offset-4 hover:underline",
       },
       size: {
         default:

@@ -26,12 +26,18 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
   const payload = await getPayload({ config })
   const params = await searchParams
 
-  const [occasionsResult, paymentSettings] = await Promise.all([
+  const [occasionsResult, boardMembersResult, paymentSettings] = await Promise.all([
     payload.find({
       collection: 'occasions',
       where: { isActive: { equals: true } },
       limit: 100,
       sort: '-createdAt',
+    }),
+    payload.find({
+      collection: 'board-members',
+      sort: 'order',
+      limit: 100,
+      depth: 0,
     }),
     payload.findGlobal({ slug: 'payment-settings' }),
   ])
@@ -44,6 +50,12 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
     description: occasion.description,
     isFixedAmount: occasion.isFixedAmount,
     fixedAmount: occasion.fixedAmount,
+  }))
+
+  const boardMembers = boardMembersResult.docs.map((member) => ({
+    id: member.id,
+    name: member.name,
+    role: member.role,
   }))
 
   let initialTarget: DonationTarget | null = null
@@ -62,6 +74,7 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         <DonateForm
           occasions={occasions}
+          boardMembers={boardMembers}
           globalSuggestedAmounts={globalSuggestedAmounts}
           minCustomAmount={paymentSettings.minCustomAmount ?? 10000}
           isLoggedIn={Boolean(user)}

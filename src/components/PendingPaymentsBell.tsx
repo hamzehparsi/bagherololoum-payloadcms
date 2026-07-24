@@ -28,12 +28,12 @@ export default function PendingPaymentsBell({ items }: PendingPaymentsBellProps)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-brand-green/15 bg-brand-green/[0.04] text-brand-green transition-all hover:border-brand-green/30 hover:bg-brand-green/[0.08] hover:text-brand-green"
         aria-label="پرداخت‌های در انتظار"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-4 w-4" />
         {count > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-red px-1 text-[10px] font-bold leading-none text-white shadow-sm ring-2 ring-card">
             {count > 9 ? '۹+' : count.toLocaleString('fa-IR')}
           </span>
         )}
@@ -66,7 +66,7 @@ export default function PendingPaymentsBell({ items }: PendingPaymentsBellProps)
                     {item.occasionTitle} · {item.createdAtLabel}
                   </span>
                 </span>
-                <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-primary">
+                <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-brand-red">
                   ادامه پرداخت
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </span>

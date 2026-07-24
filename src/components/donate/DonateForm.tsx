@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
-import { Heart, Sparkles, Building2 } from 'lucide-react'
+import { Heart, Sparkles, Building2, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -15,8 +15,15 @@ import {
   type DonationTarget,
 } from '@/lib/payment-amounts'
 
+export type BoardMemberOption = {
+  id: number
+  name: string
+  role?: string | null
+}
+
 type DonateFormProps = {
   occasions: DonateOccasionOption[]
+  boardMembers: BoardMemberOption[]
   globalSuggestedAmounts: number[]
   minCustomAmount: number
   isLoggedIn: boolean
@@ -25,6 +32,7 @@ type DonateFormProps = {
 
 export default function DonateForm({
   occasions,
+  boardMembers,
   globalSuggestedAmounts,
   minCustomAmount,
   isLoggedIn,
@@ -32,6 +40,7 @@ export default function DonateForm({
 }: DonateFormProps) {
   const [selectedTarget, setSelectedTarget] = useState<DonationTarget | null>(initialTarget)
   const [amount, setAmount] = useState<number | null>(null)
+  const [referredById, setReferredById] = useState<number | null>(null)
   const [pending, startTransition] = useTransition()
 
   const selectedOccasion = useMemo(() => {
@@ -44,6 +53,11 @@ export default function DonateForm({
     if (selectedOccasion) return selectedOccasion.title
     return null
   }, [selectedTarget, selectedOccasion])
+
+  const selectedReferrer = useMemo(() => {
+    if (!referredById) return null
+    return boardMembers.find((member) => member.id === referredById) ?? null
+  }, [boardMembers, referredById])
 
   const suggestedAmounts = useMemo(() => {
     if (!selectedTarget) return []
@@ -61,6 +75,7 @@ export default function DonateForm({
   const handleTargetSelect = (target: DonationTarget) => {
     setSelectedTarget(target)
     setAmount(null)
+    if (target !== 'general') setReferredById(null)
   }
 
   const handleSubmit = () => {
@@ -75,9 +90,10 @@ export default function DonateForm({
     }
 
     const occasionId = selectedTarget === 'general' ? null : selectedTarget
+    const referrer = selectedTarget === 'general' ? referredById : null
 
     startTransition(async () => {
-      const result = await prepareDonation(occasionId, effectiveAmount)
+      const result = await prepareDonation(occasionId, effectiveAmount, referrer)
 
       if (result?.error) {
         toast.error(result.error)
@@ -87,9 +103,9 @@ export default function DonateForm({
 
   return (
     <div className="space-y-8">
-      <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 p-6">
+      <div className="rounded-2xl border border-border bg-gradient-to-br from-brand-red/5 via-background to-brand-green/5 p-6">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-red/10 text-brand-red">
             <Heart className="h-5 w-5" />
           </div>
           <div>
@@ -105,7 +121,7 @@ export default function DonateForm({
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Sparkles className="h-4 w-4 text-brand-red" />
           <p className="text-sm font-semibold">موضوع کمک</p>
         </div>
 
@@ -116,12 +132,12 @@ export default function DonateForm({
             className={cn(
               'rounded-2xl border p-4 text-right transition-all',
               selectedTarget === 'general'
-                ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                : 'border-border bg-card hover:border-primary/30',
+                ? 'border-brand-red bg-brand-red/5 ring-1 ring-brand-red/20'
+                : 'border-border bg-card hover:border-brand-red/30',
             )}
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green">
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
@@ -143,8 +159,8 @@ export default function DonateForm({
                 className={cn(
                   'rounded-2xl border p-4 text-right transition-all',
                   selected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                    : 'border-border bg-card hover:border-primary/30',
+                    ? 'border-brand-red bg-brand-red/5 ring-1 ring-brand-red/20'
+                    : 'border-border bg-card hover:border-brand-red/30',
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -157,7 +173,7 @@ export default function DonateForm({
                     )}
                   </div>
                   {occasion.isFixedAmount && occasion.fixedAmount != null && (
-                    <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                    <span className="shrink-0 rounded-full bg-brand-red/10 px-3 py-1 text-xs font-medium text-brand-red">
                       {formatTomans(occasion.fixedAmount)}
                     </span>
                   )}
@@ -167,6 +183,35 @@ export default function DonateForm({
           })}
         </div>
       </div>
+
+      {selectedTarget === 'general' && boardMembers.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-brand-green" />
+            <p className="text-sm font-semibold">معرف (اختیاری)</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            اگر یکی از اعضای هیات امنا شما را به این کمک دعوت کرده، او را انتخاب کنید.
+          </p>
+          <select
+            value={referredById ?? ''}
+            onChange={(event) => {
+              const value = event.target.value
+              setReferredById(value ? Number(value) : null)
+            }}
+            disabled={pending}
+            className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/30"
+          >
+            <option value="">بدون معرف</option>
+            {boardMembers.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+                {member.role ? ` — ${member.role}` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="space-y-3">
         <p className="text-sm font-semibold">مبلغ پرداخت</p>
@@ -189,7 +234,7 @@ export default function DonateForm({
       <div className="rounded-xl border border-border bg-muted/20 px-4 py-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">مبلغ نهایی</span>
-          <span className="text-base font-bold text-foreground">
+          <span className="text-base font-bold text-brand-red">
             {effectiveAmount ? formatTomans(effectiveAmount) : '—'}
           </span>
         </div>
@@ -199,9 +244,16 @@ export default function DonateForm({
             <span>{selectedLabel}</span>
           </div>
         )}
+        {selectedReferrer && (
+          <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+            <span>معرف</span>
+            <span>{selectedReferrer.name}</span>
+          </div>
+        )}
       </div>
 
       <Button
+        variant="secondary"
         className="h-12 w-full text-sm font-semibold"
         disabled={pending || !selectedTarget || !effectiveAmount}
         onClick={handleSubmit}

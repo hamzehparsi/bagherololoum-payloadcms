@@ -25,7 +25,7 @@ export default function PayWithZarinpalButton({ donationId }: PayWithZarinpalBut
   }
 
   return (
-    <Button className="h-12 w-full text-sm font-semibold" disabled={pending} onClick={handlePay}>
+    <Button variant="secondary" className="h-12 w-full text-sm font-semibold" disabled={pending} onClick={handlePay}>
       {pending ? 'در حال انتقال...' : 'پرداخت با زرین‌پال'}
     </Button>
   )

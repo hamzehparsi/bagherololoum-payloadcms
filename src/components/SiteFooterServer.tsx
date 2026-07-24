@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 
 import SiteFooter from '@/components/SiteFooter'
 import { publishedOnly } from '@/lib/content'
+import { resolveMediaUrl } from '@/lib/media'
 import { getNavigation } from '@/lib/navigation'
 import { getSiteSettings } from '@/lib/site-settings'
 
@@ -32,6 +33,8 @@ export default async function SiteFooterServer() {
     <SiteFooter
       navigation={navigation}
       siteName={settings.siteName || 'هیات باقرالعلوم (ع)'}
+      siteDescription={settings.siteDescription}
+      logoUrl={resolveMediaUrl(settings.siteLogo)}
       pages={pages}
     />
   )

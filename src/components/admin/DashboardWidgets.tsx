@@ -1,6 +1,6 @@
 import type { WidgetServerProps } from 'payload'
 
-import { getDonationStats } from '@/lib/donation-stats'
+import { getDonationStats, getReferrerStats } from '@/lib/donation-stats'
 import { formatTomans } from '@/lib/format'
 import { GENERAL_DONATION_TITLE } from '@/lib/payment-amounts'
 
@@ -107,6 +107,73 @@ export async function OccasionsBreakdownWidget({ req }: WidgetServerProps) {
                 >
                   <span>{item.title}</span>
                   <span style={{ fontWeight: 600 }}>{formatTomans(item.raised)}</span>
+                </div>
+                <div
+                  style={{
+                    height: '6px',
+                    borderRadius: '999px',
+                    background: 'var(--theme-elevation-100)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${percent}%`,
+                      height: '100%',
+                      borderRadius: '999px',
+                      background: 'var(--theme-success-500)',
+                    }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export async function ReferrersBreakdownWidget({ req }: WidgetServerProps) {
+  const referrers = await getReferrerStats(req.payload)
+  const maxRaised = referrers.reduce((max, item) => Math.max(max, item.amount), 0)
+
+  return (
+    <div style={cardStyle}>
+      <p style={{ fontSize: '13px', fontWeight: 700, margin: '0 0 4px' }}>
+        معرف‌های حمایت عمومی — این ماه
+      </p>
+      <p style={{ fontSize: '12px', color: 'var(--theme-elevation-500)', margin: '0 0 14px' }}>
+        جمع کمک‌های موفق که هر عضو هیات امنا معرف آن‌ها بوده است
+      </p>
+
+      {referrers.length === 0 ? (
+        <p style={{ fontSize: '13px', color: 'var(--theme-elevation-500)', margin: 0 }}>
+          در این ماه هنوز معرفی ثبت نشده است.
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {referrers.map((item) => {
+            const percent = maxRaised > 0 ? Math.round((item.amount / maxRaised) * 100) : 0
+
+            return (
+              <div key={item.id}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    fontSize: '13px',
+                    marginBottom: '4px',
+                  }}
+                >
+                  <span>
+                    {item.name}
+                    <span style={{ color: 'var(--theme-elevation-500)', marginRight: '6px' }}>
+                      ({item.count.toLocaleString('fa-IR')} کمک)
+                    </span>
+                  </span>
+                  <span style={{ fontWeight: 600 }}>{formatTomans(item.amount)}</span>
                 </div>
                 <div
                   style={{

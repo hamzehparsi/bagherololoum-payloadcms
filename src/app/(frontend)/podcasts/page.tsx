@@ -3,7 +3,7 @@ import Link from 'next/link'
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
-import ContentCard from '@/components/content/ContentCard'
+import PodcastCard from '@/components/content/PodcastCard'
 import ContentPageShell from '@/components/content/ContentPageShell'
 import Pagination from '@/components/content/Pagination'
 import { getSession } from '@/app/(frontend)/auth/actions/get-session'
@@ -11,11 +11,16 @@ import {
   CONTENT_PAGE_SIZE,
   parsePageParam,
   podcastCategoryLabels,
-  publishedOnly,
 } from '@/lib/content'
 import { formatJalaliDate } from '@/lib/jalali-date'
 import { resolveMediaAlt, resolveMediaSizeUrl } from '@/lib/media'
 import { generatePageMetadata } from '@/lib/page-metadata'
+import {
+  buildPodcastWhere,
+  buildPodcastsUrl,
+  normalizePodcastPerformer,
+  normalizePodcastTag,
+} from '@/lib/podcast-filters'
 import { cn } from '@/lib/utils'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type PodcastsPageProps = {
-  searchParams: Promise<{ page?: string; category?: string }>
+  searchParams: Promise<{ page?: string; category?: string; tag?: string; performer?: string }>
 }
 
 export default async function PodcastsPage({ searchParams }: PodcastsPageProps) {
@@ -35,11 +40,12 @@ export default async function PodcastsPage({ searchParams }: PodcastsPageProps) 
   const page = parsePageParam(params.page)
   const category =
     params.category && podcastCategoryLabels[params.category] ? params.category : undefined
+  const tag = normalizePodcastTag(params.tag)
+  const performer = normalizePodcastPerformer(params.performer)
   const payload = await getPayload({ config })
 
-  const where = category
-    ? { and: [publishedOnly, { category: { equals: category } }] }
-    : publishedOnly
+  const listFilters = { category, tag, performer }
+  const where = buildPodcastWhere(listFilters)
 
   const result = await payload.find({
     collection: 'podcasts',
@@ -50,18 +56,61 @@ export default async function PodcastsPage({ searchParams }: PodcastsPageProps) 
     depth: 1,
   })
 
+  const paginationQuery = {
+    category,
+    tag,
+    performer,
+  }
+
+  const emptyMessage = tag
+    ? `هنوز صوتی با هشتگ «${tag}» منتشر نشده است.`
+    : performer
+      ? `هنوز صوتی از «${performer}» منتشر نشده است.`
+      : category
+        ? 'هنوز صوتی در این دسته منتشر نشده است.'
+        : 'هنوز صوتی منتشر نشده است.'
+
   return (
     <ContentPageShell
       user={user}
       title="روضه‌ها و پادکست‌ها"
       description="شنیدن روضه، مداحی، سخنرانی و پادکست‌های هیات."
     >
+      {(tag || performer) && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-green/20 bg-brand-green/5 px-4 py-3">
+          <div className="space-y-1 text-sm">
+            {tag && (
+              <p>
+                <span className="text-muted-foreground">فیلتر هشتگ: </span>
+                <span className="font-medium text-brand-green">#{tag}</span>
+              </p>
+            )}
+            {performer && (
+              <p>
+                <span className="text-muted-foreground">سخنران / مداح: </span>
+                <span className="font-medium text-brand-green">{performer}</span>
+              </p>
+            )}
+          </div>
+          <Link
+            href={buildPodcastsUrl({ category })}
+            className="text-xs font-medium text-brand-red hover:underline"
+          >
+            حذف فیلتر
+          </Link>
+        </div>
+      )}
+
       <div className="mb-6 flex flex-wrap gap-2">
-        <CategoryChip href="/podcasts" active={!category} label="همه" />
+        <CategoryChip
+          href={buildPodcastsUrl({ tag, performer })}
+          active={!category}
+          label="همه"
+        />
         {Object.entries(podcastCategoryLabels).map(([value, label]) => (
           <CategoryChip
             key={value}
-            href={`/podcasts?category=${value}`}
+            href={buildPodcastsUrl({ category: value, tag, performer })}
             active={category === value}
             label={label}
           />
@@ -69,23 +118,18 @@ export default async function PodcastsPage({ searchParams }: PodcastsPageProps) 
       </div>
 
       {result.docs.length === 0 ? (
-        <p className="text-sm text-muted-foreground">هنوز صوتی در این دسته منتشر نشده است.</p>
+        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {result.docs.map((podcast) => (
-              <ContentCard
+              <PodcastCard
                 key={podcast.id}
                 href={`/podcasts/${podcast.slug || podcast.id}`}
                 title={podcast.title}
                 description={podcast.description}
-                meta={[
-                  podcastCategoryLabels[podcast.category],
-                  podcast.performer,
-                  formatJalaliDate(podcast.createdAt),
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
+                performer={podcast.performer}
+                date={formatJalaliDate(podcast.createdAt)}
                 imageUrl={resolveMediaSizeUrl(podcast.coverImage, 'card')}
                 imageAlt={resolveMediaAlt(podcast.coverImage, podcast.title)}
                 badge={podcastCategoryLabels[podcast.category]}
@@ -96,7 +140,7 @@ export default async function PodcastsPage({ searchParams }: PodcastsPageProps) 
             page={result.page || page}
             totalPages={result.totalPages}
             basePath="/podcasts"
-            query={{ category }}
+            query={paginationQuery}
             label="صفحه‌بندی صوت‌ها"
           />
         </>
@@ -120,7 +164,7 @@ function CategoryChip({
       className={cn(
         'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
         active
-          ? 'bg-primary text-primary-foreground'
+          ? 'bg-brand-red text-brand-red-foreground'
           : 'border border-border bg-card text-muted-foreground hover:text-foreground',
       )}
     >

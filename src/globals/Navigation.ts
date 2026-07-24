@@ -57,17 +57,77 @@ export const Navigation: GlobalConfig = {
               ],
               fields: linkFields,
             },
+            {
+              name: 'aboutMenuItems',
+              type: 'array',
+              label: 'زیرمنوی «پیرامون هیات»',
+              labels: { singular: 'لینک', plural: 'لینک‌ها' },
+              admin: {
+                description:
+                  'این آیتم‌ها در هاور منوی «پیرامون هیات» نمایش داده می‌شوند. می‌توانید صفحه CMS انتخاب کنید یا لینک سفارشی (مثل /board) بدهید.',
+              },
+              defaultValue: [
+                {
+                  label: 'هیات امنا',
+                  linkType: 'custom',
+                  href: '/board',
+                  openInNewTab: false,
+                },
+              ],
+              fields: [
+                {
+                  name: 'label',
+                  type: 'text',
+                  required: true,
+                  label: 'عنوان نمایشی',
+                },
+                {
+                  name: 'linkType',
+                  type: 'radio',
+                  required: true,
+                  defaultValue: 'page',
+                  label: 'نوع لینک',
+                  options: [
+                    { label: 'از لیست صفحات', value: 'page' },
+                    { label: 'لینک سفارشی', value: 'custom' },
+                  ],
+                  admin: {
+                    layout: 'horizontal',
+                  },
+                },
+                {
+                  name: 'page',
+                  type: 'relationship',
+                  relationTo: 'pages',
+                  label: 'صفحه',
+                  admin: {
+                    condition: (_data, siblingData) => siblingData?.linkType === 'page',
+                    description: 'صفحات منتشرشده را انتخاب کنید (مثلاً معرفی هیات).',
+                  },
+                },
+                {
+                  name: 'href',
+                  type: 'text',
+                  label: 'لینک سفارشی',
+                  admin: {
+                    condition: (_data, siblingData) => siblingData?.linkType === 'custom',
+                    description:
+                      'مسیر داخلی مثل ‎/board‎ یا ‎/donate‎ یا آدرس کامل https://...',
+                  },
+                },
+                {
+                  name: 'openInNewTab',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  label: 'باز شدن در تب جدید',
+                },
+              ],
+            },
           ],
         },
         {
           label: 'فوتر',
           fields: [
-            {
-              name: 'footerAbout',
-              type: 'textarea',
-              label: 'متن معرفی کوتاه در فوتر',
-              defaultValue: 'هیات باقرالعلوم (ع) — سامانه محتوا و کمک مالی',
-            },
             {
               name: 'footerAddress',
               type: 'textarea',

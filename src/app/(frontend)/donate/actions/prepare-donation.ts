@@ -18,6 +18,7 @@ export type PrepareDonationResult = {
 export async function prepareDonation(
   occasionId: number | null,
   amount: number,
+  referredById: number | null = null,
 ): Promise<PrepareDonationResult> {
   if (!amount || amount <= 0) {
     return { success: false, error: 'مبلغ نامعتبر است.' }
@@ -30,6 +31,8 @@ export async function prepareDonation(
 
     let occasionTitle = GENERAL_DONATION_TITLE
     let isFixedAmount = false
+    let resolvedReferrerId: number | null = null
+    let resolvedReferrerName: string | null = null
 
     if (occasionId) {
       const occasion = await payload.findByID({
@@ -54,10 +57,25 @@ export async function prepareDonation(
           error: `حداقل مبلغ ${minAmount.toLocaleString('fa-IR')} تومان است.`,
         }
       }
-    } else if (amount < minAmount) {
-      return {
-        success: false,
-        error: `حداقل مبلغ ${minAmount.toLocaleString('fa-IR')} تومان است.`,
+    } else {
+      if (amount < minAmount) {
+        return {
+          success: false,
+          error: `حداقل مبلغ ${minAmount.toLocaleString('fa-IR')} تومان است.`,
+        }
+      }
+
+      if (referredById) {
+        try {
+          const member = await payload.findByID({
+            collection: 'board-members',
+            id: referredById,
+          })
+          resolvedReferrerId = member.id
+          resolvedReferrerName = member.name
+        } catch {
+          return { success: false, error: 'عضو هیات امنای انتخاب‌شده معتبر نیست.' }
+        }
       }
     }
 
@@ -66,6 +84,8 @@ export async function prepareDonation(
       occasionTitle,
       amount,
       isFixedAmount,
+      referredById: resolvedReferrerId,
+      referredByName: resolvedReferrerName,
     })
 
     const user = await getSession()

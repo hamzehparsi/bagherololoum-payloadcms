@@ -27,6 +27,7 @@ export function buildDonationsCsvRows(
     'نام کمک‌کننده',
     'موبایل',
     'موضوع',
+    'معرف',
     'کد پیگیری',
     'کد مرجع',
     'روش پرداخت',
@@ -35,6 +36,10 @@ export function buildDonationsCsvRows(
   const rows = donations.map((donation) => {
     const donor =
       typeof donation.donor === 'object' && donation.donor ? donation.donor : null
+    const referrer =
+      typeof donation.referredBy === 'object' && donation.referredBy
+        ? donation.referredBy.name
+        : '—'
 
     return [
       String(donation.id),
@@ -44,6 +49,7 @@ export function buildDonationsCsvRows(
       donor ? getDonorDisplayName(donor) : '—',
       donor?.username || '—',
       getOccasionTitle(donation.occasion),
+      referrer,
       donation.trackingCode || '—',
       donation.refId || '—',
       donation.paymentMethod || '—',

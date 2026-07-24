@@ -15,7 +15,7 @@ export default function SiteBrand({ siteName, logoUrl, className }: SiteBrandPro
           <Image src={logoUrl} alt={siteName} fill sizes="36px" className="object-contain p-0.5" />
         </span>
       ) : null}
-      <span className="truncate text-base font-black sm:text-lg">{siteName}</span>
+      <span className="truncate text-base font-black text-brand-green sm:text-lg">{siteName}</span>
     </Link>
   )
 }

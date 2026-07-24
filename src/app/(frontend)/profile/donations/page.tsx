@@ -69,7 +69,7 @@ export default async function ProfileDonationsPage({ searchParams }: ProfileDona
         <h1 className="mb-6 text-xl font-bold">پرداخت‌های من</h1>
 
         {params.payment === 'success' && (
-          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <div className="mb-4 rounded-xl border border-brand-green/20 bg-brand-green/5 px-4 py-3 text-sm text-brand-green">
             پرداخت با موفقیت انجام شد.
           </div>
         )}

@@ -19,11 +19,16 @@ export async function getSession(): Promise<Donor | null> {
       }),
     })
 
-    if (user?.collection === 'donors') {
-      return user as Donor
-    }
+    if (user?.collection !== 'donors') return null
 
-    return null
+    // Populate avatar relation for header / profile UI
+    return (await payload.findByID({
+      collection: 'donors',
+      id: user.id,
+      depth: 1,
+      overrideAccess: false,
+      user,
+    })) as Donor
   } catch (err) {
     console.error('getSession error:', err)
     return null

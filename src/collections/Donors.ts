@@ -58,6 +58,32 @@ const Donors: CollectionConfig = {
       type: 'text',
       label: 'نام خانوادگی',
     },
+    {
+      name: 'avatar',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'تصویر پروفایل',
+      admin: {
+        description: 'کاربر می‌تواند از صفحه پروفایل سایت این تصویر را تغییر دهد.',
+      },
+    },
+    {
+      name: 'avatarPreset',
+      type: 'select',
+      label: 'قالب رنگی پروفایل',
+      defaultValue: 'gradient-1',
+      options: [
+        { label: 'سبز', value: 'gradient-1' },
+        { label: 'آبی', value: 'gradient-2' },
+        { label: 'بنفش', value: 'gradient-3' },
+        { label: 'طلایی', value: 'gradient-4' },
+        { label: 'صورتی', value: 'gradient-5' },
+        { label: 'ارغوانی', value: 'gradient-6' },
+      ],
+      admin: {
+        description: 'اگر کاربر تصویری بارگذاری نکرده باشد، این گرادیانت نمایش داده می‌شود.',
+      },
+    },
     ...jalaliTimestampFields,
   ],
   hooks: {

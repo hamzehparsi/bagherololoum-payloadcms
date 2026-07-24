@@ -65,7 +65,7 @@ export default async function DonatePaymentPage({ searchParams }: PaymentPagePro
       <main className="mx-auto max-w-lg px-4 py-8 sm:px-6 sm:py-10">
         <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-red/10 text-brand-red">
               <CreditCard className="h-5 w-5" />
             </div>
             <div>
@@ -83,7 +83,7 @@ export default async function DonatePaymentPage({ searchParams }: PaymentPagePro
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">مبلغ</span>
-              <span className="font-bold">{formatTomans(donation.amount)}</span>
+              <span className="font-bold text-brand-red">{formatTomans(donation.amount)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">کد پیگیری</span>

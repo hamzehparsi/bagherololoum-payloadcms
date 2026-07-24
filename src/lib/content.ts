@@ -17,3 +17,13 @@ export const podcastCategoryLabels: Record<string, string> = {
   lecture: 'سخنرانی',
   podcast: 'پادکست',
 }
+
+export type GalleryMediaType = 'photo' | 'video'
+
+export function galleryMediaType(gallery: {
+  type?: GalleryMediaType | null
+  videos?: unknown[] | null
+}): GalleryMediaType {
+  if (gallery.type) return gallery.type
+  return (gallery.videos?.length ?? 0) > 0 ? 'video' : 'photo'
+}

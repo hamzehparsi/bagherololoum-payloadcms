@@ -11,9 +11,9 @@ const Donations: CollectionConfig = {
   admin: {
     useAsTitle: 'trackingCode',
     group: 'مالی',
-    defaultColumns: ['trackingCode', 'amount', 'status', 'createdAt'],
+    defaultColumns: ['trackingCode', 'amount', 'status', 'referredBy', 'createdAt'],
     components: {
-      beforeListTable: ['@/components/admin/DonationsExportButton#DonationsExportButton'],
+      listMenuItems: ['@/components/admin/DonationsExportButton#DonationsExportButton'],
     },
     description: 'لیست تمامی کمک‌های مالی',
   },
@@ -90,6 +90,17 @@ const Donations: CollectionConfig = {
       relationTo: 'occasions',
       required: false,
       label: 'مناسبت',
+    },
+    {
+      name: 'referredBy',
+      type: 'relationship',
+      relationTo: 'board-members',
+      required: false,
+      label: 'معرف (هیات امنا)',
+      admin: {
+        description: 'فقط برای حمایت عمومی هیات — عضوی که کمک‌کننده را معرفی کرده است.',
+        condition: (data) => !data?.occasion,
+      },
     },
     {
       name: 'amount',

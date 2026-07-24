@@ -120,7 +120,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           {occasionId && (
             <Link
               href={`/donate?occasion=${occasionId}`}
-              className={cn(buttonVariants({ size: 'lg' }), 'mt-6 gap-2')}
+              className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'mt-6 gap-2')}
             >
               کمک به این برنامه
               <ArrowLeft className="h-4 w-4" />

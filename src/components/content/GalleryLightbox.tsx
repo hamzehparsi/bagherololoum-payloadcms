@@ -2,23 +2,59 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, X } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
 
 export type GalleryLightboxImage = {
   id: string | number
   src: string
   fullSrc: string
   alt: string
+  width?: number | null
+  height?: number | null
+  filename?: string | null
 }
 
 type GalleryLightboxProps = {
   images: GalleryLightboxImage[]
 }
 
+function isPortrait(image: GalleryLightboxImage): boolean {
+  const width = image.width || 0
+  const height = image.height || 0
+  return height > 0 && width > 0 && height > width
+}
+
+async function downloadImage(image: GalleryLightboxImage) {
+  const extension = image.filename?.split('.').pop() || 'jpg'
+  const safeName =
+    image.filename?.replace(/[^\w.\u0600-\u06FF-]+/g, '-') || `image-${image.id}.${extension}`
+
+  try {
+    const response = await fetch(image.fullSrc)
+    if (!response.ok) throw new Error('download failed')
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = safeName
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch {
+    // fallback: open original in new tab if blob download fails
+    window.open(image.fullSrc, '_blank', 'noopener,noreferrer')
+  }
+}
+
 export default function GalleryLightbox({ images }: GalleryLightboxProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [downloading, setDownloading] = useState(false)
   const isOpen = activeIndex !== null
   const current = activeIndex !== null ? images[activeIndex] : null
+  const currentPortrait = current ? isPortrait(current) : false
 
   const close = useCallback(() => setActiveIndex(null), [])
 
@@ -35,6 +71,16 @@ export default function GalleryLightbox({ images }: GalleryLightboxProps) {
       return (index + 1) % images.length
     })
   }, [images.length])
+
+  const handleDownload = useCallback(async () => {
+    if (!current || downloading) return
+    setDownloading(true)
+    try {
+      await downloadImage(current)
+    } finally {
+      setDownloading(false)
+    }
+  }, [current, downloading])
 
   useEffect(() => {
     if (!isOpen) return
@@ -57,7 +103,7 @@ export default function GalleryLightbox({ images }: GalleryLightboxProps) {
 
   return (
     <>
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {images.map((image, index) => (
           <button
             key={image.id}
@@ -85,14 +131,29 @@ export default function GalleryLightbox({ images }: GalleryLightboxProps) {
           aria-label="نمایش تصویر"
           onClick={close}
         >
-          <button
-            type="button"
-            onClick={close}
-            className="absolute top-4 left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-            aria-label="بستن"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                void handleDownload()
+              }}
+              disabled={downloading}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-white/10 px-3 text-sm text-white hover:bg-white/20 disabled:opacity-60"
+              aria-label="دانلود تصویر"
+            >
+              <Download className="h-4 w-4" />
+              {downloading ? 'در حال دانلود...' : 'دانلود'}
+            </button>
+            <button
+              type="button"
+              onClick={close}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+              aria-label="بستن"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
 
           {images.length > 1 && (
             <>
@@ -122,15 +183,19 @@ export default function GalleryLightbox({ images }: GalleryLightboxProps) {
           )}
 
           <div
-            className="relative h-[min(85vh,900px)] w-full max-w-6xl"
+            className="relative flex max-h-[88vh] max-w-[min(96vw,72rem)] items-center justify-center"
             onClick={(event) => event.stopPropagation()}
           >
             <Image
               src={current.fullSrc}
               alt={current.alt}
-              fill
-              sizes="100vw"
-              className="object-contain"
+              width={current.width || (currentPortrait ? 900 : 1600)}
+              height={current.height || (currentPortrait ? 1600 : 900)}
+              sizes={currentPortrait ? '(max-width: 640px) 92vw, 560px' : '96vw'}
+              className={cn(
+                'h-auto max-h-[88vh] w-auto object-contain',
+                currentPortrait ? 'max-w-[min(92vw,560px)]' : 'max-w-full',
+              )}
               priority
             />
           </div>

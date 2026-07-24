@@ -22,6 +22,9 @@ export const donationBeforeValidate: CollectionBeforeValidateHook = async ({ dat
     if (occasion.isFixedAmount && occasion.fixedAmount != null && data.amount !== occasion.fixedAmount) {
       throw new Error('مبلغ باید برابر مبلغ ثابت مناسبت باشد.')
     }
+
+    // معرف فقط برای حمایت عمومی معنا دارد
+    data.referredBy = null
   }
 
   return data

@@ -37,7 +37,7 @@ export const SiteSettings: GlobalConfig = {
               type: 'textarea',
               label: 'توضیحات کوتاه سایت',
               admin: {
-                description: 'برای meta description پیش‌فرض و snippet موتورهای جستجو',
+                description: 'در فوتر سایت و برای meta description / snippet موتورهای جستجو',
               },
             },
             {
@@ -47,6 +47,45 @@ export const SiteSettings: GlobalConfig = {
               label: 'لوگوی سایت',
               admin: {
                 description: 'در رسید PDF و بخش‌های برند سایت استفاده می‌شود',
+              },
+            },
+          ],
+        },
+        {
+          label: 'پاپ‌آپ صفحه اصلی',
+          fields: [
+            {
+              name: 'homePopupEnabled',
+              type: 'checkbox',
+              defaultValue: false,
+              label: 'نمایش پاپ‌آپ در صفحه اصلی',
+            },
+            {
+              name: 'homePopupImage',
+              type: 'upload',
+              relationTo: 'media',
+              label: 'تصویر پاپ‌آپ',
+              admin: {
+                description: 'این تصویر هنگام باز شدن صفحه اصلی به‌صورت مدال نمایش داده می‌شود.',
+                condition: (data) => Boolean(data?.homePopupEnabled),
+              },
+            },
+            {
+              name: 'homePopupLink',
+              type: 'text',
+              label: 'لینک تصویر (اختیاری)',
+              admin: {
+                description: 'با کلیک روی تصویر، کاربر به این آدرس می‌رود. مسیر داخلی مثل ‎/donate‎ یا آدرس کامل مثل https://...',
+                condition: (data) => Boolean(data?.homePopupEnabled),
+              },
+            },
+            {
+              name: 'homePopupNewTab',
+              type: 'checkbox',
+              defaultValue: false,
+              label: 'باز شدن لینک در تب جدید',
+              admin: {
+                condition: (data) => Boolean(data?.homePopupEnabled),
               },
             },
           ],

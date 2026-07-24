@@ -10,12 +10,13 @@ import {
 import type { DonationReceiptData } from '@/lib/donation-receipt-data'
 
 const palette = {
-  primary: '#0F766E',
-  primaryDark: '#115E59',
-  primarySoft: '#ECFDF5',
-  text: '#111827',
+  primary: '#00510A',
+  primaryDark: '#003808',
+  primarySoft: '#E8F0EA',
+  accent: '#C1272D',
+  text: '#1F2933',
   muted: '#6B7280',
-  line: '#E5E7EB',
+  line: '#D8E4DA',
   white: '#FFFFFF',
 }
 

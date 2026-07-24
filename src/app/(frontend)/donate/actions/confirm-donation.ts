@@ -55,6 +55,8 @@ export async function confirmDonation(): Promise<ConfirmDonationResult> {
       data: {
         donor: user.id,
         occasion: pending.occasionId ?? undefined,
+        referredBy:
+          !pending.occasionId && pending.referredById ? pending.referredById : undefined,
         amount: pending.amount,
         status: 'pending',
         paymentMethod: 'zarinpal',

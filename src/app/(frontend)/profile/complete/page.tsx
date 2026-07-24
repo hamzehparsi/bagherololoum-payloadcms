@@ -1,7 +1,5 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import SiteHeader from '@/components/SiteHeader'
 import { getSession } from '@/app/(frontend)/auth/actions/get-session'
 import { donorNeedsProfile } from '@/lib/profile'
 import { getSafeNextPath } from '@/lib/safe-redirect'

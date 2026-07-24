@@ -7,6 +7,9 @@ export type PendingDonation = {
   occasionTitle: string
   amount: number
   isFixedAmount: boolean
+  /** فقط برای حمایت عمومی — شناسه عضو هیات امنا */
+  referredById?: number | null
+  referredByName?: string | null
 }
 
 export const pendingDonationCookieOptions = {

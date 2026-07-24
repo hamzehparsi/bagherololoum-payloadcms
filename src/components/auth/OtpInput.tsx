@@ -54,7 +54,7 @@ export default function OtpInput({ value, onChange, disabled }: OtpInputProps) {
           onPaste={handlePaste}
           className={cn(
             'h-12 w-10 rounded-xl border border-input bg-background text-center text-lg font-semibold',
-            'transition-all outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
+            'transition-all outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20',
             'disabled:cursor-not-allowed disabled:opacity-50',
           )}
         />

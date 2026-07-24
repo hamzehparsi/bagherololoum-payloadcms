@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
-import ContentCard from '@/components/content/ContentCard'
+import GalleryCard from '@/components/content/GalleryCard'
+import PodcastCard from '@/components/content/PodcastCard'
 import SectionHeader from '@/components/home/SectionHeader'
-import { podcastCategoryLabels } from '@/lib/content'
+import { galleryMediaType, podcastCategoryLabels } from '@/lib/content'
 import { formatJalaliDate } from '@/lib/jalali-date'
 import { resolveMediaAlt, resolveMediaSizeUrl, resolveMediaUrl } from '@/lib/media'
 import type { Gallery, Podcast } from '@/payload-types'
@@ -29,15 +30,16 @@ export default function EventRelatedContent({ galleries, podcasts }: EventRelate
     <div className="mt-12 space-y-10 border-t border-border pt-10">
       {galleries.length > 0 && (
         <section>
-          <SectionHeader title="گزارش‌های تصویری این رویداد" href="/galleries" />
+          <SectionHeader title="چندرسانه‌ای این رویداد" href="/galleries" />
           <div className="grid gap-4 sm:grid-cols-2">
             {galleries.map((gallery) => (
-              <ContentCard
+              <GalleryCard
                 key={gallery.id}
                 href={`/galleries/${gallery.slug || gallery.id}`}
                 title={gallery.title}
                 description={gallery.description}
-                meta={formatJalaliDate(gallery.createdAt)}
+                date={formatJalaliDate(gallery.createdAt)}
+                mediaType={galleryMediaType(gallery)}
                 imageUrl={galleryCover(gallery)}
                 imageAlt={resolveMediaAlt(gallery.coverImage, gallery.title)}
               />
@@ -51,14 +53,13 @@ export default function EventRelatedContent({ galleries, podcasts }: EventRelate
           <SectionHeader title="روضه و پادکست‌های این رویداد" href="/podcasts" />
           <div className="grid gap-4 sm:grid-cols-2">
             {podcasts.map((podcast) => (
-              <ContentCard
+              <PodcastCard
                 key={podcast.id}
                 href={`/podcasts/${podcast.slug || podcast.id}`}
                 title={podcast.title}
                 description={podcast.description}
-                meta={[podcastCategoryLabels[podcast.category], podcast.performer]
-                  .filter(Boolean)
-                  .join(' · ')}
+                performer={podcast.performer}
+                date={formatJalaliDate(podcast.createdAt)}
                 imageUrl={resolveMediaSizeUrl(podcast.coverImage, 'card')}
                 imageAlt={resolveMediaAlt(podcast.coverImage, podcast.title)}
                 badge={podcastCategoryLabels[podcast.category]}

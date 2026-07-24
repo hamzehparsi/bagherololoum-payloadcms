@@ -45,6 +45,10 @@ const Occasions: CollectionConfig = {
       type: 'date',
       label: 'تاریخ شروع',
       admin: {
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'yyyy/MM/dd',
+        },
         components: {
           Field: '@/components/admin/JalaliDateField#JalaliDateField',
           Cell: '@/components/admin/JalaliDateCell#JalaliDateCell',
@@ -56,6 +60,10 @@ const Occasions: CollectionConfig = {
       type: 'date',
       label: 'تاریخ پایان',
       admin: {
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'yyyy/MM/dd',
+        },
         components: {
           Field: '@/components/admin/JalaliDateField#JalaliDateField',
           Cell: '@/components/admin/JalaliDateCell#JalaliDateCell',

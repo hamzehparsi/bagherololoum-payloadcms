@@ -27,7 +27,7 @@ export default function MockPaymentButton({ donationId }: MockPaymentButtonProps
   }
 
   return (
-    <Button className="h-12 w-full" disabled={pending} onClick={handleMockPay}>
+    <Button variant="outline" className="h-12 w-full" disabled={pending} onClick={handleMockPay}>
       {pending ? 'در حال پردازش...' : 'شبیه‌سازی پرداخت موفق'}
     </Button>
   )

@@ -27,10 +27,10 @@ const statusLabels: Record<DonationListItem['status'], string> = {
 }
 
 const statusStyles: Record<DonationListItem['status'], string> = {
-  pending: 'bg-slate-700 text-white',
-  success: 'bg-emerald-100 text-emerald-700',
-  failed: 'bg-red-100 text-red-700',
-  expired: 'bg-slate-100 text-slate-500',
+  pending: 'bg-brand-green text-white',
+  success: 'bg-brand-green/10 text-brand-green',
+  failed: 'bg-brand-red/10 text-brand-red',
+  expired: 'bg-muted text-muted-foreground',
 }
 
 async function downloadReceiptPdf(donationId: number, trackingCode?: string | null) {
@@ -91,7 +91,7 @@ function DownloadReceiptButton({
       onClick={handleDownload}
       className={cn(
         buttonVariants({ variant: 'outline', size: 'sm' }),
-        'gap-2 border-primary/20 bg-primary/1 rounded-full px-4 py-4 text-primary hover:bg-primary/10',
+        'gap-2 border-brand-red/20 bg-brand-red/5 rounded-full px-4 py-4 text-brand-red hover:bg-brand-red/10',
       )}
     >
       {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
@@ -120,7 +120,7 @@ export default function DonationsList({ items, total }: DonationsListProps) {
           >
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/60 bg-muted/20 px-5 py-4">
               <div className="min-w-0 flex-1">
-                <p className="text-lg font-bold">{formatTomans(donation.amount)}</p>
+                <p className="text-lg font-bold text-brand-red">{formatTomans(donation.amount)}</p>
                 {donation.occasionTitle && (
                   <p className="mt-1 text-xs text-muted-foreground">{donation.occasionTitle}</p>
                 )}
@@ -137,8 +137,8 @@ export default function DonationsList({ items, total }: DonationsListProps) {
                   <Link
                     href={`/donate/payment?id=${donation.id}`}
                     className={cn(
-                      buttonVariants({ size: 'sm' }),
-                      'gap-1.5 bg-gray-200 text-gray-600 hover:bg-gray-600 hover:text-gray-100 rounded-full px-4 py-4',
+                      buttonVariants({ variant: 'secondary', size: 'sm' }),
+                      'gap-1.5 rounded-full px-4 py-4',
                     )}
                   >
                     ادامه پرداخت

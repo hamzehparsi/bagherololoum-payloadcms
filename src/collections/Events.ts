@@ -5,6 +5,10 @@ import { jalaliTimestampFields } from '@/lib/payload-timestamp-fields'
 import { createSlugField } from '@/lib/slug-field'
 
 const jalaliDateAdmin = {
+  date: {
+    pickerAppearance: 'dayOnly' as const,
+    displayFormat: 'yyyy/MM/dd',
+  },
   components: {
     Field: '@/components/admin/JalaliDateField#JalaliDateField',
     Cell: '@/components/admin/JalaliDateCell#JalaliDateCell',

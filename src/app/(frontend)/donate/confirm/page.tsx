@@ -43,7 +43,7 @@ export default async function DonateConfirmPage() {
       <main className="mx-auto max-w-lg px-4 py-8 sm:px-6 sm:py-10">
         <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green">
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
@@ -59,9 +59,15 @@ export default async function DonateConfirmPage() {
               <span className="text-muted-foreground">مناسبت</span>
               <span className="font-medium">{pending.occasionTitle}</span>
             </div>
+            {pending.referredByName && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">معرف</span>
+                <span className="font-medium">{pending.referredByName}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">مبلغ</span>
-              <span className="text-base font-bold">{formatTomans(pending.amount)}</span>
+              <span className="text-base font-bold text-brand-red">{formatTomans(pending.amount)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">پرداخت‌کننده</span>

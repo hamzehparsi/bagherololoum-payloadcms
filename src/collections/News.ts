@@ -55,6 +55,10 @@ const News: CollectionConfig = {
       label: 'تاریخ انتشار',
       defaultValue: () => new Date().toISOString(),
       admin: {
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'yyyy/MM/dd',
+        },
         components: {
           Field: '@/components/admin/JalaliDateField#JalaliDateField',
           Cell: '@/components/admin/JalaliDateCell#JalaliDateCell',

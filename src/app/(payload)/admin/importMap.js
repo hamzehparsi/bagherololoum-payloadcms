@@ -31,6 +31,7 @@ import { TotalRaisedWidget as TotalRaisedWidget_55e8c9f1aba7d352d950aef48719be05
 import { SuccessCountWidget as SuccessCountWidget_55e8c9f1aba7d352d950aef48719be05 } from '@/components/admin/DashboardWidgets'
 import { PendingCountWidget as PendingCountWidget_55e8c9f1aba7d352d950aef48719be05 } from '@/components/admin/DashboardWidgets'
 import { OccasionsBreakdownWidget as OccasionsBreakdownWidget_55e8c9f1aba7d352d950aef48719be05 } from '@/components/admin/DashboardWidgets'
+import { ReferrersBreakdownWidget as ReferrersBreakdownWidget_55e8c9f1aba7d352d950aef48719be05 } from '@/components/admin/DashboardWidgets'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -68,5 +69,6 @@ export const importMap = {
   "@/components/admin/DashboardWidgets#SuccessCountWidget": SuccessCountWidget_55e8c9f1aba7d352d950aef48719be05,
   "@/components/admin/DashboardWidgets#PendingCountWidget": PendingCountWidget_55e8c9f1aba7d352d950aef48719be05,
   "@/components/admin/DashboardWidgets#OccasionsBreakdownWidget": OccasionsBreakdownWidget_55e8c9f1aba7d352d950aef48719be05,
+  "@/components/admin/DashboardWidgets#ReferrersBreakdownWidget": ReferrersBreakdownWidget_55e8c9f1aba7d352d950aef48719be05,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

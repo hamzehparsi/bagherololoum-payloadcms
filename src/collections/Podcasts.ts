@@ -77,6 +77,34 @@ const Podcasts: CollectionConfig = {
       label: 'توضیحات',
     },
     {
+      name: 'speechText',
+      type: 'richText',
+      label: 'متن سخنرانی',
+      admin: {
+        description: 'متن کامل سخنرانی یا روضه برای نمایش در صفحه جزئیات (اختیاری).',
+      },
+    },
+    {
+      name: 'hashtags',
+      type: 'array',
+      label: 'هشتگ‌ها',
+      labels: {
+        singular: 'هشتگ',
+        plural: 'هشتگ‌ها',
+      },
+      admin: {
+        description: 'مثلاً محرم، امام حسین — بدون علامت #',
+      },
+      fields: [
+        {
+          name: 'tag',
+          type: 'text',
+          required: true,
+          label: 'هشتگ',
+        },
+      ],
+    },
+    {
       name: 'isPublished',
       type: 'checkbox',
       defaultValue: true,

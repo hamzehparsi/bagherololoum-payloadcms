@@ -23,12 +23,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const payload = await getPayload({ config })
-    const [events, galleries, podcasts, news, pages] = await Promise.all([
+    const [events, galleries, podcasts, news, pages, occasions] = await Promise.all([
       payload.find({ collection: 'events', where: publishedOnly, limit: 1000, depth: 0 }),
       payload.find({ collection: 'galleries', where: publishedOnly, limit: 1000, depth: 0 }),
       payload.find({ collection: 'podcasts', where: publishedOnly, limit: 1000, depth: 0 }),
       payload.find({ collection: 'news', where: publishedOnly, limit: 1000, depth: 0 }),
       payload.find({ collection: 'pages', where: publishedOnly, limit: 100, depth: 0 }),
+      payload.find({
+        collection: 'occasions',
+        where: { isActive: { equals: true } },
+        limit: 200,
+        depth: 0,
+      }),
     ])
 
     for (const doc of events.docs) {
@@ -74,6 +80,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(doc.updatedAt),
         changeFrequency: 'monthly',
         priority: 0.5,
+      })
+    }
+    for (const doc of occasions.docs) {
+      entries.push({
+        url: `${siteUrl}/occasions/${doc.id}`,
+        lastModified: new Date(doc.updatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.7,
       })
     }
   } catch {

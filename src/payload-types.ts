@@ -122,6 +122,7 @@ export interface Config {
     'success-count': SuccessCountWidget;
     'pending-count': PendingCountWidget;
     'occasions-breakdown': OccasionsBreakdownWidget;
+    'referrers-breakdown': ReferrersBreakdownWidget;
     collections: CollectionsWidget;
   };
   user: User | Donor;
@@ -218,6 +219,14 @@ export interface Media {
       filesize?: number | null;
       filename?: string | null;
     };
+    avatar?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
     card?: {
       url?: string | null;
       width?: number | null;
@@ -244,6 +253,14 @@ export interface Donor {
   id: number;
   firstName?: string | null;
   lastName?: string | null;
+  /**
+   * کاربر می‌تواند از صفحه پروفایل سایت این تصویر را تغییر دهد.
+   */
+  avatar?: (number | null) | Media;
+  /**
+   * اگر کاربر تصویری بارگذاری نکرده باشد، این گرادیانت نمایش داده می‌شود.
+   */
+  avatarPreset?: ('gradient-1' | 'gradient-2' | 'gradient-3' | 'gradient-4' | 'gradient-5' | 'gradient-6') | null;
   createdAt: string;
   updatedAt: string;
   email?: string | null;
@@ -304,12 +321,33 @@ export interface Donation {
   id: number;
   donor: number | Donor;
   occasion?: (number | null) | Occasion;
+  /**
+   * فقط برای حمایت عمومی هیات — عضوی که کمک‌کننده را معرفی کرده است.
+   */
+  referredBy?: (number | null) | BoardMember;
   amount: number;
   status: 'pending' | 'success' | 'failed' | 'expired';
   trackingCode?: string | null;
   paymentMethod?: string | null;
   authority?: string | null;
   refId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "board-members".
+ */
+export interface BoardMember {
+  id: number;
+  name: string;
+  role?: string | null;
+  photo?: (number | null) | Media;
+  bio?: string | null;
+  /**
+   * عدد کوچک‌تر اول نمایش داده می‌شود.
+   */
+  order?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -367,6 +405,10 @@ export interface Gallery {
    */
   slug: string;
   event?: (number | null) | Event;
+  /**
+   * این نوع روی کارت گزارش در سایت نمایش داده می‌شود.
+   */
+  type: 'photo' | 'video';
   description?: string | null;
   /**
    * اگر خالی باشد، اولین تصویر گالری استفاده می‌شود.
@@ -375,7 +417,11 @@ export interface Gallery {
   /**
    * می‌توانید چند تصویر را یک‌جا انتخاب یا بارگذاری کنید.
    */
-  images: (number | Media)[];
+  images?: (number | Media)[] | null;
+  /**
+   * اگر ویدیو داشته باشد، نوع گزارش «ویدیو» نمایش داده می‌شود.
+   */
+  videos?: (number | Media)[] | null;
   isPublished?: boolean | null;
   createdAt: string;
   updatedAt: string;
@@ -397,6 +443,33 @@ export interface Podcast {
   coverImage?: (number | null) | Media;
   event?: (number | null) | Event;
   description?: string | null;
+  /**
+   * متن کامل سخنرانی یا روضه برای نمایش در صفحه جزئیات (اختیاری).
+   */
+  speechText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * مثلاً محرم، امام حسین — بدون علامت #
+   */
+  hashtags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
   isPublished?: boolean | null;
   createdAt: string;
   updatedAt: string;
@@ -434,23 +507,6 @@ export interface News {
   };
   publishedAt?: string | null;
   isPublished?: boolean | null;
-  createdAt: string;
-  updatedAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "board-members".
- */
-export interface BoardMember {
-  id: number;
-  name: string;
-  role?: string | null;
-  photo?: (number | null) | Media;
-  bio?: string | null;
-  /**
-   * عدد کوچک‌تر اول نمایش داده می‌شود.
-   */
-  order?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -661,6 +717,16 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
+        avatar?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
         card?:
           | T
           | {
@@ -690,6 +756,8 @@ export interface MediaSelect<T extends boolean = true> {
 export interface DonorsSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
+  avatar?: T;
+  avatarPreset?: T;
   createdAt?: T;
   updatedAt?: T;
   email?: T;
@@ -732,6 +800,7 @@ export interface OccasionsSelect<T extends boolean = true> {
 export interface DonationsSelect<T extends boolean = true> {
   donor?: T;
   occasion?: T;
+  referredBy?: T;
   amount?: T;
   status?: T;
   trackingCode?: T;
@@ -767,9 +836,11 @@ export interface GalleriesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   event?: T;
+  type?: T;
   description?: T;
   coverImage?: T;
   images?: T;
+  videos?: T;
   isPublished?: T;
   createdAt?: T;
   updatedAt?: T;
@@ -787,6 +858,13 @@ export interface PodcastsSelect<T extends boolean = true> {
   coverImage?: T;
   event?: T;
   description?: T;
+  speechText?: T;
+  hashtags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
   isPublished?: T;
   createdAt?: T;
   updatedAt?: T;
@@ -902,13 +980,23 @@ export interface SiteSetting {
    */
   siteUrl: string;
   /**
-   * برای meta description پیش‌فرض و snippet موتورهای جستجو
+   * در فوتر سایت و برای meta description / snippet موتورهای جستجو
    */
   siteDescription?: string | null;
   /**
    * در رسید PDF و بخش‌های برند سایت استفاده می‌شود
    */
   siteLogo?: (number | null) | Media;
+  homePopupEnabled?: boolean | null;
+  /**
+   * این تصویر هنگام باز شدن صفحه اصلی به‌صورت مدال نمایش داده می‌شود.
+   */
+  homePopupImage?: (number | null) | Media;
+  /**
+   * با کلیک روی تصویر، کاربر به این آدرس می‌رود. مسیر داخلی مثل ‎/donate‎ یا آدرس کامل مثل https://...
+   */
+  homePopupLink?: string | null;
+  homePopupNewTab?: boolean | null;
   /**
    * عنوان صفحه اصلی و fallback سایر صفحات
    */
@@ -957,7 +1045,25 @@ export interface Navigation {
         id?: string | null;
       }[]
     | null;
-  footerAbout?: string | null;
+  /**
+   * این آیتم‌ها در هاور منوی «پیرامون هیات» نمایش داده می‌شوند. می‌توانید صفحه CMS انتخاب کنید یا لینک سفارشی (مثل /board) بدهید.
+   */
+  aboutMenuItems?:
+    | {
+        label: string;
+        linkType: 'page' | 'custom';
+        /**
+         * صفحات منتشرشده را انتخاب کنید (مثلاً معرفی هیات).
+         */
+        page?: (number | null) | Page;
+        /**
+         * مسیر داخلی مثل ‎/board‎ یا ‎/donate‎ یا آدرس کامل https://...
+         */
+        href?: string | null;
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * آدرس کامل هیات برای نمایش در فوتر
    */
@@ -1023,6 +1129,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   siteUrl?: T;
   siteDescription?: T;
   siteLogo?: T;
+  homePopupEnabled?: T;
+  homePopupImage?: T;
+  homePopupLink?: T;
+  homePopupNewTab?: T;
   defaultTitle?: T;
   titleTemplate?: T;
   keywords?: T;
@@ -1047,7 +1157,16 @@ export interface NavigationSelect<T extends boolean = true> {
         openInNewTab?: T;
         id?: T;
       };
-  footerAbout?: T;
+  aboutMenuItems?:
+    | T
+    | {
+        label?: T;
+        linkType?: T;
+        page?: T;
+        href?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
   footerAddress?: T;
   footerPhone?: T;
   footerWhatsapp?: T;
@@ -1109,6 +1228,16 @@ export interface PendingCountWidget {
  * via the `definition` "occasions-breakdown_widget".
  */
 export interface OccasionsBreakdownWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrers-breakdown_widget".
+ */
+export interface ReferrersBreakdownWidget {
   data?: {
     [k: string]: unknown;
   };
